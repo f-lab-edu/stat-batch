@@ -30,11 +30,7 @@ public class MonthlyAggregationUpsertWriter extends JdbcBatchItemWriter<DailyAgg
             ON DUPLICATE KEY UPDATE
                 wrong_count = wrong_quiz_monthly_stat.wrong_count + VALUES(wrong_count),
                 total_tries = wrong_quiz_monthly_stat.total_tries + VALUES(total_tries),
-                wrong_rate  = ROUND(
-                                 (wrong_quiz_monthly_stat.wrong_count + VALUES(wrong_count)) 
-                                 * 1.0 / (wrong_quiz_monthly_stat.total_tries + VALUES(total_tries)),
-                                 4
-                             );
+                wrong_rate  = ROUND(wrong_count * 1.0 / total_tries, 4);
             """;
         setSql(sql);
 
