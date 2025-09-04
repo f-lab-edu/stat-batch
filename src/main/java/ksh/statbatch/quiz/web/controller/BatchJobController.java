@@ -1,4 +1,4 @@
-package ksh.statbatch.quiz.batch.controller;
+package ksh.statbatch.quiz.web.controller;
 
 import ksh.statbatch.quiz.batch.job.launcher.JobRunner;
 import lombok.RequiredArgsConstructor;
