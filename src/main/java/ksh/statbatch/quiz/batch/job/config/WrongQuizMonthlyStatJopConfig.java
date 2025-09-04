@@ -46,7 +46,7 @@ public class WrongQuizMonthlyStatJopConfig {
         MonthlyAggregationUpsertWriter writer
     ) {
         return new StepBuilder("daily-accumulate-step", jobRepository)
-            .<DailyAggregation, DailyAggregation>chunk(10000, transactionManager)
+            .<DailyAggregation, DailyAggregation>chunk(20000000, transactionManager)
             .reader(reader)
             .writer(writer)
             .build();
