@@ -41,11 +41,11 @@ public class WrongQuizMonthlyStatJopConfig {
     }
 
     @Bean
-    public Step dailyAccumulateStep(
+    public Step FullLoadInMemoryDailyAccumulateStep(
         DailyAggregationInMemoryReader reader,
         MonthlyAggregationUpsertWriter writer
     ) {
-        return new StepBuilder("daily-accumulate-step", jobRepository)
+        return new StepBuilder("full-load-in-memory-daily-accumulate-step", jobRepository)
             .<DailyAggregation, DailyAggregation>chunk(20000000, transactionManager)
             .reader(reader)
             .writer(writer)
