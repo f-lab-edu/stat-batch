@@ -31,8 +31,10 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
     @Value("#{jobParameters['aggregationDay']}")
     private String aggregationDayParam;
 
-    private LocalDate aggregationDay;
     private LocalDate monthStartDate;
+    private LocalDateTime startOfDay;
+    private LocalDateTime endOfDay;
+
     private Iterator<DailyAggregation> iterator;
 
     @Override
@@ -47,14 +49,13 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
 
     @Override
     public void afterPropertiesSet() {
-        aggregationDay = LocalDate.parse(aggregationDayParam);
+        LocalDate aggregationDay = LocalDate.parse(aggregationDayParam);
         monthStartDate = aggregationDay.withDayOfMonth(1);
+        startOfDay = aggregationDay.atStartOfDay();
+        endOfDay = aggregationDay.plusDays(1).atStartOfDay();
     }
 
     private List<Map<String, Object>> loadAttempts() {
-        LocalDateTime startOfDay = aggregationDay.atStartOfDay();
-        LocalDateTime endOfDay = aggregationDay.plusDays(1).atStartOfDay();
-
         Map<String, LocalDateTime> params = Map.of(
             "startOfDay", startOfDay,
             "endOfDay", endOfDay
