@@ -1,6 +1,6 @@
 package ksh.statbatch.quiz.web.controller;
 
-import ksh.statbatch.quiz.batch.job.launcher.JobRunner;
+import ksh.statbatch.quiz.batch.launcher.JobRunner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

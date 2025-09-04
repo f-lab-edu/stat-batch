@@ -1,4 +1,4 @@
-package ksh.statbatch.quiz.batch.job.launcher;
+package ksh.statbatch.quiz.batch.launcher;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
