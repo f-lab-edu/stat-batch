@@ -1,6 +1,6 @@
-package ksh.statbatch.quiz.batch.job.config;
+package ksh.statbatch.quiz.batch.config;
 
-import ksh.statbatch.quiz.batch.job.listener.JobTimeListener;
+import ksh.statbatch.quiz.batch.listener.JobTimeListener;
 import ksh.statbatch.quiz.batch.reader.DailyAggregationInMemoryReader;
 import ksh.statbatch.quiz.batch.writer.MonthlyAggregationUpsertWriter;
 import ksh.statbatch.quiz.dto.DailyAggregation;

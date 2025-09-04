@@ -1,4 +1,4 @@
-package ksh.statbatch.quiz.batch.job.listener;
+package ksh.statbatch.quiz.batch.listener;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.JobExecution;
