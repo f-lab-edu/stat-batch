@@ -20,6 +20,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregation>, InitializingBean {
 
+    private final NamedParameterJdbcTemplate jdbcTemplate;
+
     private final String SQL = """
         select song_id, is_correct
         from quiz_attempt_history
@@ -29,8 +31,7 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
         """;
 
     private RowMapper<SongAttemptResultWithoutId> rowMapper = initRowMapper();
-
-    private final NamedParameterJdbcTemplate jdbcTemplate;
+    private Iterator<DailyAggregation> iterator;
 
     @Value("#{jobParameters['aggregationDay']}")
     private String aggregationDayParam;
@@ -39,7 +40,6 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
     private LocalDateTime startOfDay;
     private LocalDateTime endOfDay;
 
-    private Iterator<DailyAggregation> iterator;
 
     @Override
     public DailyAggregation read() {
@@ -57,6 +57,13 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
         monthStartDate = aggregationDay.withDayOfMonth(1);
         startOfDay = aggregationDay.atStartOfDay();
         endOfDay = aggregationDay.plusDays(1).atStartOfDay();
+    }
+
+    private RowMapper<SongAttemptResultWithoutId> initRowMapper() {
+        return (rs, i) -> new SongAttemptResultWithoutId(
+            rs.getLong("song_id"),
+            rs.getBoolean("is_correct")
+        );
     }
 
     private List<SongAttemptResultWithoutId> loadAttempts() {
@@ -86,12 +93,4 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
         }
         return dailyAggregations.iterator();
     }
-
-    private RowMapper<SongAttemptResultWithoutId> initRowMapper() {
-        return (rs, i) -> new SongAttemptResultWithoutId(
-            rs.getLong("song_id"),
-            rs.getBoolean("is_correct")
-        );
-    }
-
 }
