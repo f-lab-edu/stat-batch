@@ -20,6 +20,9 @@ import java.util.*;
 @RequiredArgsConstructor
 public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregation>, InitializingBean {
 
+    public static final int WRONG_COUNT_INDEX = 0;
+    public static final int TOTAL_TRIES_INDEX = 1;
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     private final String SQL = """
@@ -54,9 +57,9 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
     @Override
     public void afterPropertiesSet() {
         LocalDate aggregationDay = LocalDate.parse(aggregationDayParam);
-        monthStartDate = aggregationDay.withDayOfMonth(1);
+        monthStartDate = aggregationDay.withDayOfMonth(TOTAL_TRIES_INDEX);
         startOfDay = aggregationDay.atStartOfDay();
-        endOfDay = aggregationDay.plusDays(1).atStartOfDay();
+        endOfDay = aggregationDay.plusDays(TOTAL_TRIES_INDEX).atStartOfDay();
     }
 
     private RowMapper<SongAttemptResultWithoutId> initRowMapper() {
@@ -78,8 +81,8 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
         Map<Long, long[]> agg = new HashMap<>();
         for (SongAttemptResultWithoutId attempt : attempts) {
             long[] pair = agg.computeIfAbsent(attempt.getSongId(), k -> new long[2]);
-            if (!attempt.isCorrect()) pair[0]++;
-            pair[1]++;
+            if (!attempt.isCorrect()) pair[WRONG_COUNT_INDEX]++;
+            pair[TOTAL_TRIES_INDEX]++;
         }
 
         List<DailyAggregation> dailyAggregations = new ArrayList<>(agg.size());
@@ -87,8 +90,8 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
             dailyAggregations.add(new DailyAggregation(
                 monthStartDate,
                 e.getKey(),
-                e.getValue()[0],
-                e.getValue()[1]
+                e.getValue()[WRONG_COUNT_INDEX],
+                e.getValue()[TOTAL_TRIES_INDEX]
             ));
         }
         return dailyAggregations.iterator();
