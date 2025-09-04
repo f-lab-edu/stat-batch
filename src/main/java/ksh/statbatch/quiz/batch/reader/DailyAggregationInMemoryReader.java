@@ -18,9 +18,18 @@ import java.util.*;
 @RequiredArgsConstructor
 public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregation>, InitializingBean {
 
+    private static final String SQL = """
+        select song_id, is_correct
+        from quiz_attempt_history
+        where created_at >= :startOfDay
+            and created_at < :endOfDay
+            and is_deleted = false
+        """;
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    @Value("#{jobParameters['aggregationDay']}") private String aggregationDayParam;
+    @Value("#{jobParameters['aggregationDay']}")
+    private String aggregationDayParam;
 
     private LocalDate aggregationDay;
     private LocalDate monthStartDate;
@@ -46,24 +55,16 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
         LocalDateTime startOfDay = aggregationDay.atStartOfDay();
         LocalDateTime endOfDay = aggregationDay.plusDays(1).atStartOfDay();
 
-        String sql = """
-            select song_id, is_correct
-            from quiz_attempt_history
-            where created_at >= :startOfDay
-                and created_at < :endOfDay
-                and is_deleted = false
-            """;
-
         Map<String, LocalDateTime> params = Map.of(
             "startOfDay", startOfDay,
             "endOfDay", endOfDay
         );
-        return jdbcTemplate.queryForList(sql, params);
+        return jdbcTemplate.queryForList(SQL, params);
     }
 
     private Iterator<DailyAggregation> aggregateAttempts(
         List<Map<String, Object>> resultSet
-    ){
+    ) {
         Map<Long, long[]> aggregationBySong = accumulateAggregationBySong(resultSet);
 
         return convertToDailyAggregation(aggregationBySong).iterator();
@@ -76,7 +77,7 @@ public class DailyAggregationInMemoryReader implements ItemReader<DailyAggregati
             boolean isCorrect = (Boolean) row.get("is_correct");
 
             long[] pair = aggregationBySong.computeIfAbsent(songId, k -> new long[2]);
-            if(!isCorrect) pair[0]++;
+            if (!isCorrect) pair[0]++;
             pair[1]++;
         }
         return aggregationBySong;
