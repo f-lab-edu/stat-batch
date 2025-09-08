@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 @Getter
 @AllArgsConstructor
-public class DailyAggregation {
+public class DailySongAggregation {
 
     private final LocalDate baseDate;
     private final long songId;
