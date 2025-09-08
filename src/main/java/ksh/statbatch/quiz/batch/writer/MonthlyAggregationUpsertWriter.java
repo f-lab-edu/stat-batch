@@ -15,11 +15,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MonthlyAggregationUpsertWriter implements ItemWriter<DailySongAggregation> {
 
-    private final WrongQuizMonthlyStatRepository wrongQuizMonthlyStatJdbcRepository;
+    private final WrongQuizMonthlyStatRepository wrongQuizMonthlyStatRepository;
 
     @Override
     public void write(Chunk<? extends DailySongAggregation> chunk) throws Exception {
         List<DailySongAggregation> items = (List<DailySongAggregation>) chunk.getItems();
-        wrongQuizMonthlyStatJdbcRepository.upsertAll(items);
+        wrongQuizMonthlyStatRepository.upsertAll(items);
     }
 }
