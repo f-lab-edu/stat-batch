@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 
-public interface WrongQuizMonthlyStatRepository extends JpaRepository<WrongQuizMonthlyStat, Long> {
+public interface WrongQuizMonthlyStatRepository extends JpaRepository<WrongQuizMonthlyStat, Long>, WrongQuizMonthlyStatJdbcRepository {
 
     List<WrongQuizMonthlyStat> findByBaseDate(LocalDate baseDate);
 }
