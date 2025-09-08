@@ -32,7 +32,7 @@ public class QuizAttemptHistoryQueryRepositoryImpl implements QuizAttemptHistory
             .where(
                 qah.createdAt.goe(startTime),
                 qah.createdAt.lt(endTime),
-                qah.isCorrect.isFalse()
+                qah.isDeleted.isFalse()
             )
             .fetch();
     }
