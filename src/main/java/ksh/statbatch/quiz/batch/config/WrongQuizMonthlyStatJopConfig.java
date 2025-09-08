@@ -3,7 +3,7 @@ package ksh.statbatch.quiz.batch.config;
 import ksh.statbatch.quiz.batch.listener.JobTimeListener;
 import ksh.statbatch.quiz.batch.reader.DailyAttemptInMemoryReader;
 import ksh.statbatch.quiz.batch.writer.MonthlyAggregationUpsertWriter;
-import ksh.statbatch.quiz.dto.DailyAggregation;
+import ksh.statbatch.quiz.dto.DailySongAggregation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersInvalidException;
@@ -46,7 +46,7 @@ public class WrongQuizMonthlyStatJopConfig {
         MonthlyAggregationUpsertWriter writer
     ) {
         return new StepBuilder("full-load-in-memory-daily-accumulate-step", jobRepository)
-            .<DailyAggregation, DailyAggregation>chunk(20000000, transactionManager)
+            .<DailySongAggregation, DailySongAggregation>chunk(20000000, transactionManager)
             .reader(reader)
             .writer(writer)
             .build();

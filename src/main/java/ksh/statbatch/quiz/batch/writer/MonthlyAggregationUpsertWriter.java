@@ -1,7 +1,7 @@
 package ksh.statbatch.quiz.batch.writer;
 
 import jakarta.annotation.PostConstruct;
-import ksh.statbatch.quiz.dto.DailyAggregation;
+import ksh.statbatch.quiz.dto.DailySongAggregation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
@@ -13,7 +13,7 @@ import javax.sql.DataSource;
 @Component
 @StepScope
 @RequiredArgsConstructor
-public class MonthlyAggregationUpsertWriter extends JdbcBatchItemWriter<DailyAggregation> {
+public class MonthlyAggregationUpsertWriter extends JdbcBatchItemWriter<DailySongAggregation> {
 
     private static final String SQL = """
         INSERT INTO wrong_quiz_monthly_stat

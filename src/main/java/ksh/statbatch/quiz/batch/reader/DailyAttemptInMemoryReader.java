@@ -1,6 +1,6 @@
 package ksh.statbatch.quiz.batch.reader;
 
-import ksh.statbatch.quiz.dto.DailyAggregation;
+import ksh.statbatch.quiz.dto.DailySongAggregation;
 import ksh.statbatch.quiz.dto.QuizResultWithoutId;
 import ksh.statbatch.quiz.repository.QuizAttemptHistoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +17,14 @@ import java.util.*;
 @Component
 @StepScope
 @RequiredArgsConstructor
-public class DailyAttemptInMemoryReader implements ItemReader<DailyAggregation>, InitializingBean {
+public class DailyAttemptInMemoryReader implements ItemReader<DailySongAggregation>, InitializingBean {
 
     public static final int WRONG_COUNT_INDEX = 0;
     public static final int TOTAL_TRIES_INDEX = 1;
 
     private final QuizAttemptHistoryRepository  quizAttemptHistoryRepository;
 
-    private Iterator<DailyAggregation> iterator;
+    private Iterator<DailySongAggregation> iterator;
 
     @Value("#{jobParameters['aggregationDay']}")
     private String aggregationDayParam;
@@ -35,10 +35,10 @@ public class DailyAttemptInMemoryReader implements ItemReader<DailyAggregation>,
 
 
     @Override
-    public DailyAggregation read() {
+    public DailySongAggregation read() {
         if (iterator == null) {
             List<QuizResultWithoutId> results = loadResults();
-            List<DailyAggregation> dailyAggregations = accumulateAggregationBySong(results);
+            List<DailySongAggregation> dailyAggregations = accumulateAggregationBySong(results);
             iterator = dailyAggregations.iterator();
         }
 
@@ -58,7 +58,7 @@ public class DailyAttemptInMemoryReader implements ItemReader<DailyAggregation>,
             .findQuizResultByCreatedAtBetween(startOfDay, endOfDay);
     }
 
-    private List<DailyAggregation> accumulateAggregationBySong(List<QuizResultWithoutId> attempts) {
+    private List<DailySongAggregation> accumulateAggregationBySong(List<QuizResultWithoutId> attempts) {
         Map<Long, long[]> aggregationBySong = countResultsBySong(attempts);
         return convertIntoDailyAggregation(aggregationBySong);
     }
@@ -73,10 +73,10 @@ public class DailyAttemptInMemoryReader implements ItemReader<DailyAggregation>,
         return aggregationBySong;
     }
 
-    private List<DailyAggregation> convertIntoDailyAggregation(Map<Long, long[]> aggregationBySong) {
-        List<DailyAggregation> dailyAggregations = new ArrayList<>(aggregationBySong.size());
+    private List<DailySongAggregation> convertIntoDailyAggregation(Map<Long, long[]> aggregationBySong) {
+        List<DailySongAggregation> dailyAggregations = new ArrayList<>(aggregationBySong.size());
         for (Map.Entry<Long, long[]> e : aggregationBySong.entrySet()) {
-            dailyAggregations.add(new DailyAggregation(
+            dailyAggregations.add(new DailySongAggregation(
                 monthStartDate,
                 e.getKey(),
                 e.getValue()[WRONG_COUNT_INDEX],
