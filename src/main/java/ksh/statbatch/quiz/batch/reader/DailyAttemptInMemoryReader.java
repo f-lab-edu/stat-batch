@@ -59,13 +59,21 @@ public class DailyAttemptInMemoryReader implements ItemReader<DailyAggregation>,
     }
 
     private List<DailyAggregation> accumulateAggregationBySong(List<QuizResultWithoutId> attempts) {
+        Map<Long, long[]> aggregationBySong = countResultsBySong(attempts);
+        return convertIntoDailyAggregation(aggregationBySong);
+    }
+
+    private static Map<Long, long[]> countResultsBySong(List<QuizResultWithoutId> attempts) {
         Map<Long, long[]> aggregationBySong = new HashMap<>();
         for (QuizResultWithoutId attempt : attempts) {
             long[] pair = aggregationBySong.computeIfAbsent(attempt.getSongId(), k -> new long[2]);
             if (!attempt.isCorrect()) pair[WRONG_COUNT_INDEX]++;
             pair[TOTAL_TRIES_INDEX]++;
         }
+        return aggregationBySong;
+    }
 
+    private List<DailyAggregation> convertIntoDailyAggregation(Map<Long, long[]> aggregationBySong) {
         List<DailyAggregation> dailyAggregations = new ArrayList<>(aggregationBySong.size());
         for (Map.Entry<Long, long[]> e : aggregationBySong.entrySet()) {
             dailyAggregations.add(new DailyAggregation(
