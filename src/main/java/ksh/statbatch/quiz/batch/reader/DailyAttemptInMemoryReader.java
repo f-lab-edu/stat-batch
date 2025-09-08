@@ -1,7 +1,7 @@
 package ksh.statbatch.quiz.batch.reader;
 
 import ksh.statbatch.quiz.dto.DailyAggregation;
-import ksh.statbatch.quiz.dto.SongAttemptResultWithoutId;
+import ksh.statbatch.quiz.dto.QuizResultWithoutId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemReader;
@@ -33,7 +33,7 @@ public class DailyAttemptInMemoryReader implements ItemReader<DailyAggregation>,
             and is_deleted = false
         """;
 
-    private RowMapper<SongAttemptResultWithoutId> rowMapper = initRowMapper();
+    private RowMapper<QuizResultWithoutId> rowMapper = initRowMapper();
     private Iterator<DailyAggregation> iterator;
 
     @Value("#{jobParameters['aggregationDay']}")
@@ -47,7 +47,7 @@ public class DailyAttemptInMemoryReader implements ItemReader<DailyAggregation>,
     @Override
     public DailyAggregation read() {
         if (iterator == null) {
-            List<SongAttemptResultWithoutId> attempts = loadAttempts();
+            List<QuizResultWithoutId> attempts = loadAttempts();
             iterator = accumulateAggregationBySong(attempts);
         }
 
@@ -62,14 +62,14 @@ public class DailyAttemptInMemoryReader implements ItemReader<DailyAggregation>,
         endOfDay = aggregationDay.plusDays(TOTAL_TRIES_INDEX).atStartOfDay();
     }
 
-    private RowMapper<SongAttemptResultWithoutId> initRowMapper() {
-        return (rs, i) -> new SongAttemptResultWithoutId(
+    private RowMapper<QuizResultWithoutId> initRowMapper() {
+        return (rs, i) -> new QuizResultWithoutId(
             rs.getLong("song_id"),
             rs.getBoolean("is_correct")
         );
     }
 
-    private List<SongAttemptResultWithoutId> loadAttempts() {
+    private List<QuizResultWithoutId> loadAttempts() {
         Map<String, LocalDateTime> params = Map.of(
             "startOfDay", startOfDay,
             "endOfDay", endOfDay
@@ -77,9 +77,9 @@ public class DailyAttemptInMemoryReader implements ItemReader<DailyAggregation>,
         return jdbcTemplate.query(SQL, params, rowMapper);
     }
 
-    private Iterator<DailyAggregation> accumulateAggregationBySong(List<SongAttemptResultWithoutId> attempts) {
+    private Iterator<DailyAggregation> accumulateAggregationBySong(List<QuizResultWithoutId> attempts) {
         Map<Long, long[]> agg = new HashMap<>();
-        for (SongAttemptResultWithoutId attempt : attempts) {
+        for (QuizResultWithoutId attempt : attempts) {
             long[] pair = agg.computeIfAbsent(attempt.getSongId(), k -> new long[2]);
             if (!attempt.isCorrect()) pair[WRONG_COUNT_INDEX]++;
             pair[TOTAL_TRIES_INDEX]++;

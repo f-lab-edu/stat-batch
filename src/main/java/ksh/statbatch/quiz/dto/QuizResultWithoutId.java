@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class SongAttemptResultWithoutId {
+public class QuizResultWithoutId {
 
     private long songId;
     private boolean isCorrect;
