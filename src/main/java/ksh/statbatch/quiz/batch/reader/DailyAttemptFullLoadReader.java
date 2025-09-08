@@ -17,7 +17,7 @@ import java.util.*;
 @Component
 @StepScope
 @RequiredArgsConstructor
-public class DailyAttemptInMemoryReader implements ItemReader<DailySongAggregation>, InitializingBean {
+public class DailyAttemptFullLoadReader implements ItemReader<DailySongAggregation>, InitializingBean {
 
     public static final int WRONG_COUNT_INDEX = 0;
     public static final int TOTAL_TRIES_INDEX = 1;

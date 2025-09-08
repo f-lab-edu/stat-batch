@@ -1,7 +1,7 @@
 package ksh.statbatch.quiz.batch.config;
 
 import ksh.statbatch.quiz.batch.listener.JobTimeListener;
-import ksh.statbatch.quiz.batch.reader.DailyAttemptInMemoryReader;
+import ksh.statbatch.quiz.batch.reader.DailyAttemptFullLoadReader;
 import ksh.statbatch.quiz.batch.writer.MonthlyAggregationUpsertWriter;
 import ksh.statbatch.quiz.dto.DailySongAggregation;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +42,7 @@ public class WrongQuizMonthlyStatJopConfig {
 
     @Bean
     public Step FullLoadInMemoryDailyAccumulateStep(
-        DailyAttemptInMemoryReader reader,
+        DailyAttemptFullLoadReader reader,
         MonthlyAggregationUpsertWriter writer
     ) {
         return new StepBuilder("full-load-in-memory-daily-accumulate-step", jobRepository)
