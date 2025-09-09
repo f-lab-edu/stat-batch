@@ -30,6 +30,7 @@ public class DailyAggregationCursorReader implements ItemReader<DailySongAggrega
     private LocalDate monthStartDate;
 
     private Iterator<DailySongAggregation> iterator = Collections.emptyIterator();
+    private boolean loaded = false;
 
     @Override
     public void afterPropertiesSet() {
@@ -41,16 +42,15 @@ public class DailyAggregationCursorReader implements ItemReader<DailySongAggrega
 
     @Override
     public DailySongAggregation read() {
-        if (!iterator.hasNext()) {
+        if (!loaded) {
             List<DailySongAggregation> list = quizAttemptHistoryRepository
                 .aggregateDailyAttemptsBySong(monthStartDate, startOfDay, endOfDay);
 
+            loaded = true;
             if (list.isEmpty()) return null;
-
 
             iterator = list.iterator();
         }
-
-        return iterator.next();
+        return iterator.hasNext() ? iterator.next() : null;
     }
 }
