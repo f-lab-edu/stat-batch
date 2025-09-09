@@ -15,4 +15,6 @@ public interface QuizAttemptHistoryQueryRepository {
     List<QuizResult> findQuizResultByCreatedAtBetween(LocalDateTime startTime, LocalDateTime endTime, long lastId, int pageSize);
 
     List<DailySongAggregation> aggregateDailyAttemptsBySong(LocalDate baseDate, LocalDateTime startTime, LocalDateTime endTime);
+
+    List<DailySongAggregation> aggregateDailyAttemptsBySong(LocalDate baseDate, LocalDateTime startTime, LocalDateTime endTime, long lastSongId, int pageSize);
 }
