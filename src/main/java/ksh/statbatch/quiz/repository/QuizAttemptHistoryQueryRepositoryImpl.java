@@ -2,6 +2,7 @@ package ksh.statbatch.quiz.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import ksh.statbatch.quiz.dto.QuizResult;
 import ksh.statbatch.quiz.dto.QuizResultWithoutId;
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +35,34 @@ public class QuizAttemptHistoryQueryRepositoryImpl implements QuizAttemptHistory
                 qah.createdAt.lt(endTime),
                 qah.isDeleted.isFalse()
             )
+            .fetch();
+    }
+
+    @Override
+    public List<QuizResult> findQuizResultByCreatedAtBetween(
+        LocalDateTime startTime,
+        LocalDateTime endTime,
+        long lastId,
+        int pageSize
+    ) {
+        var qah = quizAttemptHistory;
+
+        return queryFactory
+            .select(Projections.constructor(
+                QuizResult.class,
+                qah.id,
+                qah.songId,
+                qah.isCorrect
+            ))
+            .from(qah)
+            .where(
+                qah.createdAt.goe(startTime),
+                qah.createdAt.lt(endTime),
+                qah.isDeleted.isFalse(),
+                qah.id.gt(lastId)
+            )
+            .orderBy(qah.id.asc())
+            .limit(pageSize)
             .fetch();
     }
 }
