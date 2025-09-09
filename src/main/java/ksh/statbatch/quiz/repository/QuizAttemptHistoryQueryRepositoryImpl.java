@@ -1,11 +1,16 @@
 package ksh.statbatch.quiz.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import ksh.statbatch.quiz.dto.DailySongAggregation;
 import ksh.statbatch.quiz.dto.QuizResult;
 import ksh.statbatch.quiz.dto.QuizResultWithoutId;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -63,6 +68,36 @@ public class QuizAttemptHistoryQueryRepositoryImpl implements QuizAttemptHistory
             )
             .orderBy(qah.id.asc())
             .limit(pageSize)
+            .fetch();
+    }
+
+    @Override
+    public List<DailySongAggregation> aggregateDailyAttemptsBySong(
+        LocalDate baseDate,
+        LocalDateTime startTime,
+        LocalDateTime endTime
+    ) {
+        var qah = quizAttemptHistory;
+
+        var wrongIncExpr = new CaseBuilder()
+                .when(qah.isCorrect.isFalse()).then(1L)
+                .otherwise(0L);
+
+        return queryFactory
+            .select(Projections.constructor(
+                DailySongAggregation.class,
+                Expressions.constant(baseDate),
+                qah.songId,
+                wrongIncExpr.sum(),
+                qah.songId.count()
+            ))
+            .from(qah)
+            .where(
+                qah.createdAt.goe(startTime),
+                qah.createdAt.lt(endTime),
+                qah.isDeleted.isFalse()
+            )
+            .groupBy(qah.songId)
             .fetch();
     }
 }
