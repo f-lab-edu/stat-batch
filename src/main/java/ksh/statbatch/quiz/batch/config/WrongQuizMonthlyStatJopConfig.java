@@ -1,17 +1,19 @@
 package ksh.statbatch.quiz.batch.config;
 
 import ksh.statbatch.quiz.batch.listener.JobTimeListener;
-import ksh.statbatch.quiz.batch.reader.DailyAttemptFullLoadReader;
+import ksh.statbatch.quiz.batch.reader.*;
 import ksh.statbatch.quiz.batch.writer.MonthlyAggregationUpsertWriter;
 import ksh.statbatch.quiz.dto.DailySongAggregation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -24,11 +26,11 @@ public class WrongQuizMonthlyStatJopConfig {
     private final PlatformTransactionManager transactionManager;
 
     @Bean
-    public Job wrongQuizDailyAccumulateJob(
+    public Job wrongQuizDailyAggregationJob(
         Step dailyAccumulateStep,
         JobTimeListener listener
     ) {
-        return new JobBuilder("wrong-quiz-daily-accumulate-job", jobRepository)
+        return new JobBuilder("wrong-quiz-daily-aggregation-job", jobRepository)
             .incrementer(new RunIdIncrementer())
             .validator(params -> {
                 if (!params.getParameters().containsKey("aggregationDay")) {
@@ -40,13 +42,69 @@ public class WrongQuizMonthlyStatJopConfig {
             .build();
     }
 
-    @Bean
-    public Step FullLoadInMemoryDailyAccumulateStep(
+//    @Bean
+    public Step dailyAttemptFullLoadStep(
         DailyAttemptFullLoadReader reader,
         MonthlyAggregationUpsertWriter writer
     ) {
-        return new StepBuilder("full-load-in-memory-daily-accumulate-step", jobRepository)
+        return new StepBuilder("daily-attempt-full-load-step", jobRepository)
             .<DailySongAggregation, DailySongAggregation>chunk(20000000, transactionManager)
+            .reader(reader)
+            .writer(writer)
+            .build();
+    }
+
+//    @Bean
+//    @JobScope
+    public Step dailyAttemptChunkStep(
+        DailyAttemptChunkReader reader,
+        MonthlyAggregationUpsertWriter writer,
+        @Value("#{jobParameters['chunkSize']}") Integer chunkSize
+    ) {
+        return new StepBuilder("daily-attempt-chunk-step", jobRepository)
+            .<DailySongAggregation, DailySongAggregation>chunk(chunkSize, transactionManager)
+            .reader(reader)
+            .writer(writer)
+            .build();
+    }
+
+//    @Bean
+//    @JobScope
+    public Step dailyAttemptCursorStep(
+        DailyAttemptCursorReader reader,
+        MonthlyAggregationUpsertWriter writer,
+        @Value("#{jobParameters['chunkSize']}") Integer chunkSize
+    ) {
+        return new StepBuilder("daily-attempt-cursor-step", jobRepository)
+            .<DailySongAggregation, DailySongAggregation>chunk(chunkSize, transactionManager)
+            .reader(reader)
+            .writer(writer)
+            .build();
+    }
+
+//    @Bean
+//    @JobScope
+    public Step dailyAggregationChunkStep(
+        DailyAggregationChunkReader reader,
+        MonthlyAggregationUpsertWriter writer,
+        @Value("#{jobParameters['chunkSize']}") Integer chunkSize
+    ) {
+        return new StepBuilder("daily-aggregation-chunk-step", jobRepository)
+            .<DailySongAggregation, DailySongAggregation>chunk(chunkSize, transactionManager)
+            .reader(reader)
+            .writer(writer)
+            .build();
+    }
+
+    @Bean
+    @JobScope
+    public Step dailyAggregationCursorStep(
+        DailyAggregationCursorReader reader,
+        MonthlyAggregationUpsertWriter writer,
+        @Value("#{jobParameters['chunkSize']}") Integer chunkSize
+    ) {
+        return new StepBuilder("daily-aggregation-cursor-step", jobRepository)
+            .<DailySongAggregation, DailySongAggregation>chunk(chunkSize, transactionManager)
             .reader(reader)
             .writer(writer)
             .build();
