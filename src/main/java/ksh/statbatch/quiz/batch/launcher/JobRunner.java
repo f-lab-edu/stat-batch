@@ -32,4 +32,22 @@ public class JobRunner {
             log.error("배치 잡 실행 실패", e);
         }
     }
+
+
+    public void runJob(String aggregationDay, String chunkSize) {
+        try {
+            JobParameters params = new JobParametersBuilder()
+                .addString("aggregationDay", aggregationDay, true)
+                .addString("chunkSize", chunkSize, true)
+                .addString("runId", System.currentTimeMillis() + "", true)
+                .toJobParameters();
+
+            log.info("배치 잡 시작, 집계 날짜: {}", aggregationDay);
+            JobExecution execution = jobLauncher.run(job, params);
+            log.info("배치 잡 실행 ID: {}, 상태: {}", execution.getId(), execution.getStatus());
+
+        } catch (Exception e) {
+            log.error("배치 잡 실행 실패", e);
+        }
+    }
 }

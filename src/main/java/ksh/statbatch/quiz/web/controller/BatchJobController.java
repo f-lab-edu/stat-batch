@@ -19,4 +19,12 @@ public class BatchJobController {
         jobRunner.runJob(aggregationDay);
         return "배치 성공";
     }
+
+    @PostMapping("/run/chunk")
+    public String runJobWithChunk(@RequestBody Map<String, String> body) {
+        String aggregationDay = body.get("aggregationDay");
+        String chunkSize = body.get("chunkSize");
+        jobRunner.runJob(aggregationDay, chunkSize);
+        return "배치 성공";
+    }
 }
