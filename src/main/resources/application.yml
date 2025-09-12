@@ -1,13 +1,13 @@
 spring:
   batch:
     job:
-      enabled: false
+      enabled: true
     jdbc:
       initialize-schema: always
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/stat-batch?serverTimezone=Asia/Seoul
+    url: jdbc:mysql://host.docker.internal:3306/stat-batch?serverTimezone=Asia/Seoul
     username: root
     password: "1234"
 
@@ -30,5 +30,5 @@ spring:
         format_sql: true
         default_batch_fetch_size: 1000
 
-#logging.level:
-#  org.hibernate.SQL: debug
+server:
+  port: 9090
