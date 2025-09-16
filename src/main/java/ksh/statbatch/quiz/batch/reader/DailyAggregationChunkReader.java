@@ -26,7 +26,7 @@ public class DailyAggregationChunkReader implements ItemReader<DailySongAggregat
     private String aggregationDayParam;
 
     @Value("#{jobParameters['chunkSize']}")
-    private Integer pageSize;
+    private int pageSize;
 
     private LocalDateTime startOfDay;
     private LocalDateTime endOfDay;

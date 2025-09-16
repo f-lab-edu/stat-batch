@@ -25,7 +25,7 @@ public class DailyAttemptChunkReader implements ItemReader<DailySongAggregation>
     private String aggregationDayParam;
 
     @Value("#{jobParameters['chunkSize']}")
-    private Integer pageSize;
+    private int pageSize;
 
     private LocalDateTime startOfDay;
     private LocalDateTime endOfDay;
@@ -42,7 +42,7 @@ public class DailyAttemptChunkReader implements ItemReader<DailySongAggregation>
         endOfDay = aggregationDay.plusDays(1).atStartOfDay();
         monthStartDate = aggregationDay.withDayOfMonth(1);
     }
-
+    
     @Override
     public DailySongAggregation read() {
         if (isFinished) return null;
