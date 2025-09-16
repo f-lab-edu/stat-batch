@@ -33,7 +33,9 @@ public class DailyAttemptPagingReader implements ItemReader<DailySongAggregation
 
     private long lastId = 0L;
     private boolean isFinished = false;
-    private Iterator<DailySongAggregation> iterator = Collections.emptyIterator();
+
+    private List<DailySongAggregation> page;
+    private int index = 0;
 
     @Override
     public void afterPropertiesSet() {
@@ -47,18 +49,17 @@ public class DailyAttemptPagingReader implements ItemReader<DailySongAggregation
     public DailySongAggregation read() {
         if (isFinished) return null;
 
-        if (!iterator.hasNext()) {
-            List<DailySongAggregation> page = fetchNextPage();
+        if (index >= page.size()) {
+            page = fetchNextPage();
+            index = 0;
 
             if (page.isEmpty()) {
                 isFinished = true;
                 return null;
             }
-
-            iterator = page.iterator();
         }
 
-        return iterator.next();
+        return page.get(index++);
     }
 
     private List<DailySongAggregation> fetchNextPage() {
@@ -66,10 +67,8 @@ public class DailyAttemptPagingReader implements ItemReader<DailySongAggregation
         List<QuizResult> results = quizAttemptHistoryRepository
             .findQuizResultByCreatedAtBetween(startOfDay, endOfDay, lastId, pageSize);
 
-        if (results.isEmpty()) {
-            isFinished = true;
-            return Collections.emptyList();
-        }
+        if (results.isEmpty()) return Collections.emptyList();
+
 
         lastId = results.getLast().getId();
 

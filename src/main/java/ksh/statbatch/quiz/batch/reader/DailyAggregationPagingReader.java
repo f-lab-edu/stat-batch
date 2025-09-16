@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 @Component
@@ -34,7 +33,9 @@ public class DailyAggregationPagingReader implements ItemReader<DailySongAggrega
 
     private long lastSongId = 0L;
     private boolean isFinished = false;
-    private Iterator<DailySongAggregation> iterator = Collections.emptyIterator();
+
+    private List<DailySongAggregation> page;
+    private int index = 0;
 
     @Override
     public void afterPropertiesSet() {
@@ -48,28 +49,25 @@ public class DailyAggregationPagingReader implements ItemReader<DailySongAggrega
     public DailySongAggregation read() {
         if (isFinished) return null;
 
-        if (!iterator.hasNext()) {
-            List<DailySongAggregation> page = fetchNextPage();
+        if (index >= page.size()) {
+            page = fetchNextPage();
+            index = 0;
 
             if (page.isEmpty()) {
                 isFinished = true;
                 return null;
             }
-
-            iterator = page.iterator();
         }
 
-        return iterator.next();
+        return page.get(index++);
     }
 
     private List<DailySongAggregation> fetchNextPage() {
         List<DailySongAggregation> rows = queryAttemptHistoryRepository
             .aggregateDailyAttemptsBySong(monthStartDate, startOfDay, endOfDay, lastSongId, pageSize);
 
-        if (rows.isEmpty()) {
-            isFinished = true;
-            return Collections.emptyList();
-        }
+        if (rows.isEmpty()) return Collections.emptyList();
+
 
         lastSongId = rows.getLast().getSongId();
 

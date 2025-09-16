@@ -12,7 +12,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @StepScope
@@ -24,8 +27,6 @@ public class DailyAttemptFullLoadReader implements ItemReader<DailySongAggregati
 
     private final QuizAttemptHistoryRepository  quizAttemptHistoryRepository;
 
-    private Iterator<DailySongAggregation> iterator;
-
     @Value("#{jobParameters['aggregationDay']}")
     private String aggregationDayParam;
 
@@ -33,16 +34,20 @@ public class DailyAttemptFullLoadReader implements ItemReader<DailySongAggregati
     private LocalDateTime startOfDay;
     private LocalDateTime endOfDay;
 
+    private List<DailySongAggregation> list;
+    private int index = 0;
+
 
     @Override
     public DailySongAggregation read() {
-        if (iterator == null) {
+        if (list == null) {
             List<QuizResultWithoutId> results = loadResults();
-            List<DailySongAggregation> dailyAggregations = accumulateAggregationBySong(results);
-            iterator = dailyAggregations.iterator();
+            list = accumulateAggregationBySong(results);
         }
 
-        return iterator.hasNext() ? iterator.next() : null;
+        if(index >= list.size()) return null;
+
+        return list.get(index++);
     }
 
     @Override
