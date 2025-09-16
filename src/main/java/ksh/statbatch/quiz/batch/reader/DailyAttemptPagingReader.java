@@ -1,6 +1,7 @@
 package ksh.statbatch.quiz.batch.reader;
 
 import ksh.statbatch.quiz.dto.DailySongAggregation;
+import ksh.statbatch.quiz.dto.QuizResult;
 import ksh.statbatch.quiz.repository.QuizAttemptHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -11,16 +12,14 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Component
 @StepScope
 @RequiredArgsConstructor
-public class DailyAggregationChunkReader implements ItemReader<DailySongAggregation>, InitializingBean {
+public class DailyAttemptPagingReader implements ItemReader<DailySongAggregation>, InitializingBean {
 
-    private final QuizAttemptHistoryRepository queryAttemptHistoryRepository;
+    private final QuizAttemptHistoryRepository quizAttemptHistoryRepository;
 
     @Value("#{jobParameters['aggregationDay']}")
     private String aggregationDayParam;
@@ -32,7 +31,7 @@ public class DailyAggregationChunkReader implements ItemReader<DailySongAggregat
     private LocalDateTime endOfDay;
     private LocalDate monthStartDate;
 
-    private long lastSongId = 0L;
+    private long lastId = 0L;
     private boolean isFinished = false;
     private Iterator<DailySongAggregation> iterator = Collections.emptyIterator();
 
@@ -43,7 +42,7 @@ public class DailyAggregationChunkReader implements ItemReader<DailySongAggregat
         endOfDay = aggregationDay.plusDays(1).atStartOfDay();
         monthStartDate = aggregationDay.withDayOfMonth(1);
     }
-
+    
     @Override
     public DailySongAggregation read() {
         if (isFinished) return null;
@@ -63,16 +62,44 @@ public class DailyAggregationChunkReader implements ItemReader<DailySongAggregat
     }
 
     private List<DailySongAggregation> fetchNextPage() {
-        List<DailySongAggregation> rows = queryAttemptHistoryRepository
-            .aggregateDailyAttemptsBySong(monthStartDate, startOfDay, endOfDay, lastSongId, pageSize);
 
-        if (rows.isEmpty()) {
+        List<QuizResult> results = quizAttemptHistoryRepository
+            .findQuizResultByCreatedAtBetween(startOfDay, endOfDay, lastId, pageSize);
+
+        if (results.isEmpty()) {
             isFinished = true;
             return Collections.emptyList();
         }
 
-        lastSongId = rows.getLast().getSongId();
+        lastId = results.getLast().getId();
 
-        return rows;
+        Map<Long, long[]> aggregationBySong = countResultBySong(results);
+        return convertInToDailyAggregation(aggregationBySong);
+    }
+
+    private Map<Long, long[]> countResultBySong(List<QuizResult> songAttemptResults) {
+        Map<Long, long[]> aggregationMap = new HashMap<>();
+
+        for (QuizResult r : songAttemptResults) {
+            long[] stats = aggregationMap.computeIfAbsent(r.getSongId(), k -> new long[2]);
+
+            if (!r.isCorrect()) stats[0]++;
+            stats[1]++;
+        }
+
+        return aggregationMap;
+    }
+
+    private List<DailySongAggregation> convertInToDailyAggregation(Map<Long, long[]> aggregationBySong) {
+        List<DailySongAggregation> dailyAggregations = new ArrayList<>();
+        for (Map.Entry<Long, long[]> aggregationOfSong : aggregationBySong.entrySet()) {
+            long songId = aggregationOfSong.getKey();
+            long wrongCount = aggregationOfSong.getValue()[0];
+            long totalTries = aggregationOfSong.getValue()[1];
+
+            DailySongAggregation dailyAggregation = new DailySongAggregation(monthStartDate, songId, wrongCount, totalTries);
+            dailyAggregations.add(dailyAggregation);
+        }
+        return dailyAggregations;
     }
 }

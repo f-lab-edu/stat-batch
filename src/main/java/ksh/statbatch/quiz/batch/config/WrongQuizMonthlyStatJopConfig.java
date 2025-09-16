@@ -56,12 +56,12 @@ public class WrongQuizMonthlyStatJopConfig {
 
 //    @Bean
 //    @JobScope
-    public Step dailyAttemptChunkStep(
-        DailyAttemptChunkReader reader,
+    public Step dailyAttemptPagingStep(
+        DailyAttemptPagingReader reader,
         MonthlyAggregationUpsertWriter writer,
         @Value("#{jobParameters['chunkSize']}") Integer chunkSize
     ) {
-        return new StepBuilder("daily-attempt-chunk-step", jobRepository)
+        return new StepBuilder("daily-attempt-paging-step", jobRepository)
             .<DailySongAggregation, DailySongAggregation>chunk(chunkSize, transactionManager)
             .reader(reader)
             .writer(writer)
@@ -84,12 +84,12 @@ public class WrongQuizMonthlyStatJopConfig {
 
 //    @Bean
 //    @JobScope
-    public Step dailyAggregationChunkStep(
-        DailyAggregationChunkReader reader,
+    public Step dailyAggregationPagingStep(
+        DailyAggregationPagingReader reader,
         MonthlyAggregationUpsertWriter writer,
         @Value("#{jobParameters['chunkSize']}") Integer chunkSize
     ) {
-        return new StepBuilder("daily-aggregation-chunk-step", jobRepository)
+        return new StepBuilder("daily-aggregation-paging-step", jobRepository)
             .<DailySongAggregation, DailySongAggregation>chunk(chunkSize, transactionManager)
             .reader(reader)
             .writer(writer)
