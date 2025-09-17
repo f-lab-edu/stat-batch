@@ -16,6 +16,8 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.TransientDataAccessException;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -61,10 +63,19 @@ public class WrongQuizMonthlyStatJopConfig {
         MonthlyAggregationUpsertWriter writer,
         @Value("#{jobParameters['chunkSize']}") Integer chunkSize
     ) {
+        ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
+        backOffPolicy.setInitialInterval(200);
+        backOffPolicy.setMultiplier(2);
+        backOffPolicy.setMaxInterval(5000);
+
         return new StepBuilder("daily-attempt-paging-step", jobRepository)
             .<DailySongAggregation, DailySongAggregation>chunk(chunkSize, transactionManager)
             .reader(reader)
             .writer(writer)
+            .faultTolerant()
+            .retry(TransientDataAccessException.class)
+            .retryLimit(5)
+            .backOffPolicy(backOffPolicy)
             .build();
     }
 
@@ -89,10 +100,19 @@ public class WrongQuizMonthlyStatJopConfig {
         MonthlyAggregationUpsertWriter writer,
         @Value("#{jobParameters['chunkSize']}") Integer chunkSize
     ) {
+        ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
+        backOffPolicy.setInitialInterval(200);
+        backOffPolicy.setMultiplier(2);
+        backOffPolicy.setMaxInterval(5000);
+
         return new StepBuilder("daily-aggregation-paging-step", jobRepository)
             .<DailySongAggregation, DailySongAggregation>chunk(chunkSize, transactionManager)
             .reader(reader)
             .writer(writer)
+            .faultTolerant()
+            .retry(TransientDataAccessException.class)
+            .retryLimit(5)
+            .backOffPolicy(backOffPolicy)
             .build();
     }
 
