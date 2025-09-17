@@ -5,8 +5,8 @@ import ksh.statbatch.quiz.dto.QuizResult;
 import ksh.statbatch.quiz.repository.QuizAttemptHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,10 @@ import java.util.*;
 @Component
 @StepScope
 @RequiredArgsConstructor
-public class DailyAttemptPagingReader implements ItemReader<DailySongAggregation>, InitializingBean {
+public class DailyAttemptPagingReader implements ItemStreamReader<DailySongAggregation> {
+
+    private static final String CONTEXT_LAST_ID = "daily.attempt.paging.reader.lastId";
+    private static final String CONTEXT_IS_FINISHED = "daily.attempt.paging.reader.isFinished";
 
     private final QuizAttemptHistoryRepository quizAttemptHistoryRepository;
 
@@ -38,11 +41,22 @@ public class DailyAttemptPagingReader implements ItemReader<DailySongAggregation
     private int index = 0;
 
     @Override
-    public void afterPropertiesSet() {
+    public void open(ExecutionContext executionContext) {
         LocalDate aggregationDay = LocalDate.parse(aggregationDayParam);
         startOfDay = aggregationDay.atStartOfDay();
         endOfDay = aggregationDay.plusDays(1).atStartOfDay();
         monthStartDate = aggregationDay.withDayOfMonth(1);
+
+        if (executionContext.containsKey(CONTEXT_LAST_ID)) {
+            lastId = executionContext.getLong(CONTEXT_LAST_ID);
+        }
+
+        if (executionContext.containsKey(CONTEXT_IS_FINISHED)) {
+            isFinished = (boolean) executionContext.get(CONTEXT_IS_FINISHED);
+        }
+
+        page = null;
+        index = 0;
     }
     
     @Override
@@ -60,6 +74,12 @@ public class DailyAttemptPagingReader implements ItemReader<DailySongAggregation
         }
 
         return page.get(index++);
+    }
+
+    @Override
+    public void update(ExecutionContext executionContext) {
+        executionContext.put(CONTEXT_LAST_ID, lastId);
+        executionContext.put(CONTEXT_IS_FINISHED, isFinished);
     }
 
     private List<DailySongAggregation> fetchNextPage() {
