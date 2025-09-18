@@ -1,0 +1,36 @@
+﻿jenkins:
+  systemMessage: "JCasC로 구성된 Jenkins(로컬 HA 프록시 뒤)"
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "1234"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+  numExecutors: 1
+  crumbIssuer: standard
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"
+
+jobs:
+  - script: |
+      pipelineJob("stat-batch") {
+        description("리포의 Jenkinsfile로 Spring Batch 컨테이너를 실행")
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote { url("https://github.com/f-lab-edu/stat-batch.git") }
+                branch("*/main")
+              }
+            }
+            scriptPath("Jenkinsfile") 
+          }
+        }
+        // SCM 폴링 (Webhook 전환 가능)
+        triggers { scm("H/2 * * * *") }
+      }
