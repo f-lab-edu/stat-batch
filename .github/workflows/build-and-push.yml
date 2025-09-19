@@ -30,6 +30,6 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          cp build/libs/*.jar ./app.jar
+          cp build/libs/stat-batch-0.0.1-SNAPSHOT.jar stat-batch-0.0.1-SNAPSHOT.jar
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/stat-batch:latest .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/stat-batch:latest
