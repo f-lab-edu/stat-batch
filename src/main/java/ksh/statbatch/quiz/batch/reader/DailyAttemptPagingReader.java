@@ -63,7 +63,7 @@ public class DailyAttemptPagingReader implements ItemStreamReader<DailySongAggre
     public DailySongAggregation read() {
         if (isFinished) return null;
 
-        if (index >= page.size()) {
+        if (page == null || index >= page.size()) {
             page = fetchNextPage();
             index = 0;
 
