@@ -56,8 +56,8 @@ public class WrongQuizMonthlyStatJopConfig {
             .build();
     }
 
-//    @Bean
-//    @JobScope
+    @Bean
+    @JobScope
     public Step dailyAttemptPagingStep(
         DailyAttemptPagingReader reader,
         MonthlyAggregationUpsertWriter writer,
@@ -116,8 +116,8 @@ public class WrongQuizMonthlyStatJopConfig {
             .build();
     }
 
-    @Bean
-    @JobScope
+//    @Bean
+//    @JobScope
     public Step dailyAggregationCursorStep(
         DailyAggregationCursorReader reader,
         MonthlyAggregationUpsertWriter writer,
