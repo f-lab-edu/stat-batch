@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -42,10 +44,14 @@ public class DailyAggregationPagingReader implements ItemStreamReader<DailySongA
 
     @Override
     public void open(ExecutionContext executionContext) {
+        ZoneId KST = ZoneId.of("Asia/Seoul");
         LocalDate aggregationDay = LocalDate.parse(aggregationDayParam);
-        startOfDay = aggregationDay.atStartOfDay();
-        endOfDay = aggregationDay.plusDays(1).atStartOfDay();
-        monthStartDate = aggregationDay.withDayOfMonth(1);
+        ZonedDateTime kstStart = aggregationDay.atStartOfDay(KST);
+        ZonedDateTime kstEnd   = aggregationDay.plusDays(1).atStartOfDay(KST);
+
+        this.startOfDay = kstStart.toLocalDateTime();
+        this.endOfDay   = kstEnd.toLocalDateTime();
+        this.monthStartDate = aggregationDay.withDayOfMonth(1);
 
         if (executionContext.containsKey(CONTEXT_LAST_SONG_ID)) {
             lastSongId = executionContext.getLong(CONTEXT_LAST_SONG_ID);

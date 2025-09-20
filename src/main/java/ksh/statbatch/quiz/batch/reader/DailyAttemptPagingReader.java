@@ -4,6 +4,7 @@ import ksh.statbatch.quiz.dto.DailySongAggregation;
 import ksh.statbatch.quiz.dto.QuizResult;
 import ksh.statbatch.quiz.repository.QuizAttemptHistoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamReader;
@@ -12,11 +13,14 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Component
 @StepScope
 @RequiredArgsConstructor
+@Slf4j
 public class DailyAttemptPagingReader implements ItemStreamReader<DailySongAggregation> {
 
     private static final String CONTEXT_LAST_ID = "daily.attempt.paging.reader.lastId";
@@ -42,10 +46,17 @@ public class DailyAttemptPagingReader implements ItemStreamReader<DailySongAggre
 
     @Override
     public void open(ExecutionContext executionContext) {
+        ZoneId KST = ZoneId.of("Asia/Seoul");
         LocalDate aggregationDay = LocalDate.parse(aggregationDayParam);
-        startOfDay = aggregationDay.atStartOfDay();
-        endOfDay = aggregationDay.plusDays(1).atStartOfDay();
-        monthStartDate = aggregationDay.withDayOfMonth(1);
+        ZonedDateTime kstStart = aggregationDay.atStartOfDay(KST);
+        ZonedDateTime kstEnd   = aggregationDay.plusDays(1).atStartOfDay(KST);
+
+        this.startOfDay = kstStart.toLocalDateTime();
+        this.endOfDay   = kstEnd.toLocalDateTime();
+        this.monthStartDate = aggregationDay.withDayOfMonth(1);
+        log.info(startOfDay.toString());
+        log.info(endOfDay.toString());
+        log.info(monthStartDate.toString());
 
         if (executionContext.containsKey(CONTEXT_LAST_ID)) {
             lastId = executionContext.getLong(CONTEXT_LAST_ID);
@@ -65,6 +76,7 @@ public class DailyAttemptPagingReader implements ItemStreamReader<DailySongAggre
 
         if (page == null || index >= page.size()) {
             page = fetchNextPage();
+            log.info("page size: " + page.size());
             index = 0;
 
             if (page.isEmpty()) {
