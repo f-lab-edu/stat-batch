@@ -31,6 +31,8 @@ jobs:
             scriptPath("Jenkinsfile") 
           }
         }
-        // SCM 폴링 (Webhook 전환 가능)
-        triggers { scm("H/2 * * * *") }
+
+        triggers {
+          cron("* * * * *")
+        }
       }
